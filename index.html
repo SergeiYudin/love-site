@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Для тебя ❤️</title>
-
 <style>
 body {
     margin: 0;
@@ -15,6 +14,7 @@ body {
     background: linear-gradient(135deg, #ffd6e7, #ffeef5);
     font-family: Arial, sans-serif;
     overflow: hidden;
+    position: relative;
 }
 
 .card {
@@ -26,39 +26,60 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
     text-align: center;
     position: relative;
+    z-index: 10;
 }
 
 h1 {
     color: #ff4d6d;
     font-size: 22px;
+    margin-bottom: 40px;
+}
+
+.button-container {
+    position: relative;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 button {
     font-size: 18px;
     padding: 12px 20px;
-    margin: 10px;
+    margin: 0 10px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
-    transition: transform 0.25s ease;
+    transition: transform 0.2s ease;
+    font-weight: bold;
 }
 
 #yesBtn {
     background: #ff4d6d;
     color: white;
+    position: relative;
+    z-index: 5;
+}
+
+#yesBtn:hover {
+    transform: scale(1.1);
 }
 
 #noBtn {
     background: #ddd;
+    color: #666;
     position: absolute;
+    right: 40px;
+    z-index: 10;
 }
 
 #message {
     font-size: 24px;
     color: #ff4d6d;
-    margin-top: 15px;
+    margin-top: 30px;
     opacity: 0;
     transition: opacity 1s;
+    font-weight: bold;
 }
 
 /* Сердечки */
@@ -66,6 +87,8 @@ button {
     position: absolute;
     color: #ff4d6d;
     animation: floatUp 6s linear infinite;
+    z-index: 1;
+    pointer-events: none;
 }
 
 @keyframes floatUp {
@@ -78,54 +101,84 @@ canvas {
     top: 0;
     left: 0;
     pointer-events: none;
+    z-index: 5;
 }
 </style>
 </head>
 <body>
 
-<audio id="music" loop>
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-112199.mp3">
+<audio id="music" loop preload="auto">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-112199.mp3" type="audio/mpeg">
 </audio>
 
 <canvas id="confetti"></canvas>
 
 <div class="card" id="card">
     <h1>Будешь ли ты моей девушкой?</h1>
-    <button id="yesBtn">Да</button>
-    <button id="noBtn">Нет</button>
+    <div class="button-container">
+        <button id="yesBtn">Да</button>
+        <button id="noBtn">Нет</button>
+    </div>
     <div id="message"></div>
 </div>
 
 <script>
+// Получаем элементы
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
 const message = document.getElementById("message");
 const music = document.getElementById("music");
-const card = document.getElementById("card");
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
 
 let scale = 1;
 
-/* Музыка запускается после первого касания */
-document.body.addEventListener("click", () => {
-    music.play().catch(()=>{});
+// Устанавливаем размер canvas
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+// Музыка запускается после первого касания
+document.body.addEventListener("click", function playMusic() {
+    music.play().catch(() => {});
+    document.body.removeEventListener('click', playMusic);
 }, { once: true });
 
-/* Убегающая кнопка Нет */
+// Убегающая кнопка Нет
 function moveNoButton() {
-    const rect = card.getBoundingClientRect();
-    const x = Math.random() * (rect.width - 80);
-    const y = Math.random() * (rect.height - 50);
-    noBtn.style.left = x + "px";
-    noBtn.style.top = y + "px";
-
-    scale += 0.15;
-    yesBtn.style.transform = scale(${scale});
+    const cardRect = card.getBoundingClientRect();
+    const noBtnRect = noBtn.getBoundingClientRect();
+    
+    // Вычисляем доступную область внутри карточки
+    const maxX = cardRect.width - noBtnRect.width - 20;
+    const maxY = cardRect.height - noBtnRect.height - 70; // Учитываем заголовок и отступы
+    
+    if (maxX > 50 && maxY > 50) {
+        const newX = 10 + Math.random() * (maxX - 20);
+        const newY = 60 + Math.random() * (maxY - 40);
+        
+        noBtn.style.left = newX + "px";
+        noBtn.style.top = newY + "px";
+        noBtn.style.right = "auto";
+        noBtn.style.bottom = "auto";
+        
+        // Увеличиваем кнопку "Да"
+        scale += 0.15;
+        yesBtn.style.transform = `scale(${scale})`;
+    }
 }
 
-noBtn.addEventListener("touchstart", moveNoButton);
-noBtn.addEventListener("mouseover", moveNoButton);
+// Обработчики для кнопки "Нет"
+noBtn.addEventListener("mouseenter", moveNoButton);
+noBtn.addEventListener("touchstart", (e) => {
+    e.preventDefault();
+    moveNoButton();
+});
 
-/* Нажатие Да */
+// Нажатие Да
 yesBtn.addEventListener("click", () => {
     message.textContent = "Я тоже тебя люблю ❤️";
     message.style.opacity = 1;
@@ -134,49 +187,79 @@ yesBtn.addEventListener("click", () => {
     startConfetti();
 });
 
-/* Сердечки */
+// Сердечки
 function createHeart() {
     const heart = document.createElement("div");
     heart.className = "heart";
     heart.innerHTML = "❤️";
     heart.style.left = Math.random() * window.innerWidth + "px";
     heart.style.fontSize = (14 + Math.random() * 18) + "px";
+    heart.style.animationDuration = (4 + Math.random() * 4) + "s";
     document.body.appendChild(heart);
     setTimeout(() => heart.remove(), 6000);
 }
 setInterval(createHeart, 350);
 
-/* Конфетти */
-const canvas = document.getElementById("confetti");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let confetti = [];
+// Конфетти
+let confettiParticles = [];
+let animationId = null;
 
 function startConfetti() {
-    for (let i = 0; i < 120; i++) {
-        confetti.push({
+    // Создаем частицы конфетти
+    for (let i = 0; i < 150; i++) {
+        confettiParticles.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height - canvas.height,
-            r: Math.random() * 6 + 2
+            r: Math.random() * 4 + 2,
+            speed: 1 + Math.random() * 3,
+            color: `hsl(${Math.random() * 360}, 100%, 60%)`
         });
+    }
+    
+    if (animationId) {
+        cancelAnimationFrame(animationId);
     }
     drawConfetti();
 }
 
 function drawConfetti() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    confetti.forEach(c => {
+    
+    let allParticlesGone = true;
+    
+    confettiParticles.forEach(p => {
         ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
-        ctx.fillStyle = hsl(${Math.random()*360},100%,60%);
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
         ctx.fill();
-        c.y += 2;
-        if (c.y > canvas.height) c.y = -10;
+        
+        p.y += p.speed;
+        
+        // Если частица еще не улетела за экран
+        if (p.y < canvas.height + 10) {
+            allParticlesGone = false;
+        }
     });
-    requestAnimationFrame(drawConfetti);
+    
+    // Удаляем частицы, которые улетели за экран
+    confettiParticles = confettiParticles.filter(p => p.y < canvas.height + 10);
+    
+    if (confettiParticles.length > 0) {
+        animationId = requestAnimationFrame(drawConfetti);
+    } else {
+        animationId = null;
+    }
+}
+
+// Обработка resize для конфетти
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+// Добавляем начальные сердечки
+for(let i = 0; i < 5; i++) {
+    setTimeout(createHeart, i * 100);
 }
 </script>
 
