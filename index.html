@@ -49,6 +49,7 @@ h1 {
     line-height: 1.3;
     text-shadow: 3px 3px 0 rgba(255, 255, 255, 0.8);
     letter-spacing: -0.5px;
+    pointer-events: none;
 }
 
 h1 span {
@@ -63,90 +64,64 @@ h1 span {
 
 .button-wrapper {
     position: relative;
-    height: 180px;
+    height: 200px;
     width: 100%;
-    margin: 25px 0 15px;
+    margin: 20px 0;
+    z-index: 200;
 }
 
-/* Кнопка ДА - новая стилизация */
+/* Кнопка ДА - исправленная */
 #yesBtn {
     background: linear-gradient(145deg, #ff4d6d, #ff1a4f);
     color: white;
     font-size: 28px;
-    padding: 22px 40px;
+    padding: 20px 40px;
     border: none;
     border-radius: 80px;
     font-weight: 800;
     letter-spacing: 2px;
-    box-shadow: 0 15px 30px rgba(255, 77, 109, 0.5),
-                0 0 0 3px white,
-                0 0 0 6px #ff4d6d;
+    box-shadow: 0 10px 25px rgba(255, 77, 109, 0.5);
     cursor: pointer;
     position: absolute;
     left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    transition: all 0.2s ease;
-    min-width: 180px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    min-width: 160px;
     text-transform: uppercase;
-    animation: pulse 1.5s infinite;
-}
-
-#yesBtn::before {
-    content: "❤️";
-    position: absolute;
-    left: -10px;
-    top: -10px;
-    font-size: 30px;
-    animation: rotate 3s linear infinite;
-}
-
-#yesBtn::after {
-    content: "❤️";
-    position: absolute;
-    right: -10px;
-    bottom: -10px;
-    font-size: 30px;
-    animation: rotate 3s linear infinite reverse;
-}
-
-@keyframes pulse {
-    0% { transform: translateX(-50%) scale(1); }
-    50% { transform: translateX(-50%) scale(1.05); }
-    100% { transform: translateX(-50%) scale(1); }
-}
-
-@keyframes rotate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    border: 3px solid white;
+    transition: transform 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    pointer-events: auto;
 }
 
 #yesBtn:active {
-    transform: translateX(-50%) scale(0.95);
+    transform: translate(-50%, -50%) scale(0.95);
     background: linear-gradient(145deg, #ff1a4f, #ff4d6d);
-    box-shadow: 0 5px 15px rgba(255, 77, 109, 0.5),
-                0 0 0 3px white,
-                0 0 0 6px #ff4d6d;
 }
 
+/* Кнопка НЕТ */
 #noBtn {
     background: #e0e0e0;
     color: #666;
-    font-size: 20px;
-    padding: 15px 30px;
+    font-size: 22px;
+    padding: 15px 35px;
     border: none;
     border-radius: 50px;
     font-weight: 600;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     position: absolute;
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 10;
+    z-index: 500;
     border: 2px solid white;
-    opacity: 0.9;
     transition: all 0.2s ease;
+    pointer-events: auto;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
 }
 
 #noBtn:active {
@@ -161,13 +136,14 @@ h1 span {
     opacity: 0;
     transition: opacity 0.5s;
     font-weight: 800;
-    min-height: 50px;
+    min-height: 60px;
     text-shadow: 2px 2px 0 white;
     background: rgba(255, 255, 255, 0.5);
     padding: 15px 20px;
     border-radius: 60px;
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+    pointer-events: none;
 }
 
 .heart {
@@ -220,6 +196,11 @@ canvas {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-10px) rotate(5deg); }
 }
+
+/* Тестовый стиль для отладки */
+.debug {
+    border: 2px solid red;
+}
 </style>
 </head>
 <body>
@@ -251,6 +232,8 @@ canvas {
 
 <script>
 (function() {
+    'use strict';
+    
     // Элементы
     const yesBtn = document.getElementById('yesBtn');
     const noBtn = document.getElementById('noBtn');
@@ -265,6 +248,8 @@ canvas {
     let moveCount = 0;
     let audioUnlocked = false;
     let yesBtnClicked = false;
+    
+    console.log('Скрипт загружен', yesBtn, noBtn);
     
     // Настройка canvas
     function setupCanvas() {
@@ -282,14 +267,14 @@ canvas {
             music.pause();
             music.currentTime = 0;
             audioUnlocked = true;
-        }).catch(() => {});
-        
-        document.removeEventListener('touchstart', unlockAudio);
-        document.removeEventListener('click', unlockAudio);
+            console.log('Аудио разблокировано');
+        }).catch(e => console.log('Ошибка аудио:', e));
     }
     
+    // Пробуем разблокировать аудио при любом касании
     document.addEventListener('touchstart', unlockAudio);
     document.addEventListener('click', unlockAudio);
+    document.addEventListener('touchend', unlockAudio);
     
     // Функция запуска музыки
     function playMusic() {
@@ -298,7 +283,7 @@ canvas {
             setTimeout(() => playMusic(), 100);
             return;
         }
-        music.play().catch(() => {});
+        music.play().catch(e => console.log('Ошибка воспроизведения:', e));
     }
     
     // Убегающая кнопка "Нет"
@@ -309,24 +294,25 @@ canvas {
         }
         
         if (yesBtnClicked) return;
+        if (!wrapper || !noBtn) return;
+        
         moveCount++;
         
-        // Получаем размеры
         const wrapperRect = wrapper.getBoundingClientRect();
         const noBtnRect = noBtn.getBoundingClientRect();
         
+        if (!wrapperRect.width || !wrapperRect.height) return;
+        
         // Вычисляем безопасную область
-        const minX = 10;
-        const maxX = wrapperRect.width - noBtnRect.width - 10;
-        const minY = 10;
-        const maxY = wrapperRect.height - noBtnRect.height - 10;
+        const minX = 5;
+        const maxX = Math.max(minX, wrapperRect.width - noBtnRect.width - 5);
+        const minY = 5;
+        const maxY = Math.max(minY, wrapperRect.height - noBtnRect.height - 5);
         
         if (maxX > minX && maxY > minY) {
-            // Генерируем новые координаты
             let newX, newY;
             
             if (moveCount > 3) {
-                // После 3 попыток - более хитрые позиции
                 const corners = [
                     { x: minX, y: minY },
                     { x: maxX, y: minY },
@@ -341,24 +327,14 @@ canvas {
                 newY = minY + Math.random() * (maxY - minY);
             }
             
-            // Применяем позицию
             noBtn.style.left = newX + 'px';
             noBtn.style.top = newY + 'px';
             noBtn.style.right = 'auto';
             noBtn.style.bottom = 'auto';
             
-            // Увеличиваем кнопку "Да"
-            scale = Math.min(scale + 0.15, 2.2);
-            yesBtn.style.transform = `translateX(-50%) scale(${scale})`;
+            scale = Math.min(scale + 0.1, 1.8);
+            yesBtn.style.transform = `translate(-50%, -50%) scale(${scale})`;
             
-            // Меняем текст кнопки "Да" при увеличении
-            if (scale > 1.5 && scale < 1.8) {
-                yesBtn.textContent = 'ДА! ❤️';
-            } else if (scale >= 1.8) {
-                yesBtn.textContent = '❤️ ДА! ❤️';
-            }
-            
-            // Вибрация
             if (navigator.vibrate) {
                 navigator.vibrate(10);
             }
@@ -366,59 +342,82 @@ canvas {
     }
     
     // Обработчики для кнопки "Нет"
-    noBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        moveNoButton(e);
-    });
+    if (noBtn) {
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            moveNoButton(e);
+        }, { passive: false });
+        
+        noBtn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            moveNoButton(e);
+        });
+        
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+        });
+    }
     
-    noBtn.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        moveNoButton(e);
-    });
-    
-    // Нажатие на "Да"
-    yesBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        if (yesBtnClicked) return;
-        yesBtnClicked = true;
-        
-        // Меняем стиль кнопки перед исчезновением
-        yesBtn.style.animation = 'none';
-        yesBtn.style.transform = 'translateX(-50%) scale(2)';
-        yesBtn.style.opacity = '0';
-        
-        // Показываем сообщение
-        setTimeout(() => {
-            yesBtn.style.display = 'none';
-            noBtn.style.display = 'none';
-        }, 200);
-        
-        message.style.opacity = '1';
-        message.textContent = 'Я ТОЖЕ ТЕБЯ ЛЮБЛЮ! ❤️';
-        
-        // Запускаем музыку
-        playMusic();
-        
-        // Запускаем конфетти
-        startConfetti();
-        
-        // Вибрация
-        if (navigator.vibrate) {
-            navigator.vibrate([100, 50, 100, 50, 200]);
-        }
-        
-        // Создаем много сердечек
-        for (let i = 0; i < 20; i++) {
+    // Нажатие на "Да" - ИСПРАВЛЕНО
+    if (yesBtn) {
+        // Несколько обработчиков для надежности
+        yesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Клик по ДА');
+            
+            if (yesBtnClicked) return;
+            yesBtnClicked = true;
+            
+            // Показываем сообщение
+            message.style.opacity = '1';
+            message.textContent = 'Я ТОЖЕ ТЕБЯ ЛЮБЛЮ! ❤️';
+            
+            // Прячем кнопки
+            yesBtn.style.opacity = '0';
+            noBtn.style.opacity = '0';
+            
             setTimeout(() => {
-                createHeart(true);
-            }, i * 50);
-        }
-    });
-    
-    yesBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-    });
+                yesBtn.style.display = 'none';
+                noBtn.style.display = 'none';
+            }, 300);
+            
+            // Запускаем музыку и конфетти
+            playMusic();
+            startConfetti();
+            
+            // Вибрация
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
+            
+            // Много сердечек
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => createHeart(true), i * 70);
+            }
+        });
+        
+        // Добавляем touchstart для мобильных
+        yesBtn.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Тач по ДА');
+            
+            if (yesBtnClicked) return;
+            
+            // Искусственно вызываем клик
+            yesBtn.click();
+        }, { passive: false });
+        
+        // Добавляем touchend для уверенности
+        yesBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }, { passive: false });
+    }
     
     // Сердечки
     let heartInterval;
@@ -427,23 +426,20 @@ canvas {
         const heart = document.createElement('div');
         heart.className = 'heart';
         heart.textContent = ['❤️', '💖', '💗', '💕', '💓'][Math.floor(Math.random() * 5)];
-        heart.style.left = (burst ? 30 + Math.random() * 40 : Math.random() * 100) + '%';
-        heart.style.fontSize = (burst ? 30 + Math.random() * 30 : 15 + Math.random() * 25) + 'px';
+        heart.style.left = (burst ? 20 + Math.random() * 60 : Math.random() * 100) + '%';
+        heart.style.fontSize = (burst ? 25 + Math.random() * 35 : 15 + Math.random() * 25) + 'px';
         heart.style.animationDuration = (burst ? 3 + Math.random() * 2 : 4 + Math.random() * 4) + 's';
-        heart.style.animationDelay = Math.random() * 2 + 's';
         document.body.appendChild(heart);
         
         setTimeout(() => {
-            heart.remove();
+            if (heart.parentNode) heart.remove();
         }, 8000);
     }
     
     function startHearts() {
         if (heartInterval) clearInterval(heartInterval);
-        heartInterval = setInterval(() => createHeart(false), 250);
-        
-        // Создаем несколько сердечек сразу
-        for (let i = 0; i < 5; i++) {
+        heartInterval = setInterval(() => createHeart(false), 300);
+        for (let i = 0; i < 3; i++) {
             setTimeout(() => createHeart(false), i * 100);
         }
     }
@@ -454,24 +450,19 @@ canvas {
     
     function startConfetti() {
         particles = [];
-        
-        const count = window.innerWidth < 400 ? 80 : 150;
+        const count = window.innerWidth < 400 ? 60 : 100;
         
         for (let i = 0; i < count; i++) {
             particles.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height - canvas.height,
-                size: 3 + Math.random() * 6,
-                speed: 1 + Math.random() * 5,
-                color: `hsl(${Math.random() * 360}, 100%, 65%)`,
-                rotation: Math.random() * 360
+                size: 2 + Math.random() * 5,
+                speed: 1 + Math.random() * 4,
+                color: `hsl(${Math.random() * 360}, 100%, 65%)`
             });
         }
         
-        if (animFrame) {
-            cancelAnimationFrame(animFrame);
-        }
-        
+        if (animFrame) cancelAnimationFrame(animFrame);
         drawConfetti();
     }
     
@@ -480,18 +471,10 @@ canvas {
         
         for (let i = particles.length - 1; i >= 0; i--) {
             const p = particles[i];
-            
-            ctx.save();
-            ctx.translate(p.x, p.y);
-            ctx.rotate((p.rotation += 0.01) * Math.PI / 180);
-            
             ctx.beginPath();
-            ctx.arc(0, 0, p.size, 0, Math.PI * 2);
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
             ctx.fillStyle = p.color;
             ctx.fill();
-            
-            ctx.restore();
-            
             p.y += p.speed;
             
             if (p.y > canvas.height + 50) {
@@ -512,7 +495,7 @@ canvas {
         e.preventDefault();
     }, { passive: false });
     
-    // Сброс позиции кнопки при повороте экрана
+    // Сброс при повороте
     window.addEventListener('orientationchange', () => {
         setTimeout(() => {
             if (!yesBtnClicked) {
@@ -520,14 +503,24 @@ canvas {
                 noBtn.style.right = '0';
                 noBtn.style.top = '50%';
                 noBtn.style.transform = 'translateY(-50%)';
-                yesBtn.style.transform = 'translateX(-50%) scale(1)';
-                yesBtn.textContent = 'ДА!';
+                yesBtn.style.transform = 'translate(-50%, -50%) scale(1)';
+                yesBtn.style.opacity = '1';
+                noBtn.style.opacity = '1';
                 scale = 1;
                 moveCount = 0;
             }
             setupCanvas();
-        }, 200);
+        }, 300);
     });
+    
+    // Тестовый клик для отладки
+    setTimeout(() => {
+        console.log('Проверка:', {
+            yesBtn: yesBtn ? 'найден' : 'не найден',
+            noBtn: noBtn ? 'найден' : 'не найден',
+            wrapper: wrapper ? 'найден' : 'не найден'
+        });
+    }, 1000);
     
 })();
 </script>
