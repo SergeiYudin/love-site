@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Для тебя ❤️</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #ffd6e7, #ffeef5);
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.card {
+    width: 90%;
+    max-width: 350px;
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    text-align: center;
+    position: relative;
+}
+
+h1 {
+    color: #ff4d6d;
+    font-size: 22px;
+}
+
+button {
+    font-size: 18px;
+    padding: 12px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform 0.25s ease;
+}
+
+#yesBtn {
+    background: #ff4d6d;
+    color: white;
+}
+
+#noBtn {
+    background: #ddd;
+    position: absolute;
+}
+
+#message {
+    font-size: 24px;
+    color: #ff4d6d;
+    margin-top: 15px;
+    opacity: 0;
+    transition: opacity 1s;
+}
+
+/* Сердечки */
+.heart {
+    position: absolute;
+    color: #ff4d6d;
+    animation: floatUp 6s linear infinite;
+}
+
+@keyframes floatUp {
+    from { transform: translateY(100vh); opacity: 1; }
+    to { transform: translateY(-10vh); opacity: 0; }
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<audio id="music" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=romantic-love-112199.mp3">
+</audio>
+
+<canvas id="confetti"></canvas>
+
+<div class="card" id="card">
+    <h1>Будешь ли ты моей девушкой?</h1>
+    <button id="yesBtn">Да</button>
+    <button id="noBtn">Нет</button>
+    <div id="message"></div>
+</div>
+
+<script>
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const message = document.getElementById("message");
+const music = document.getElementById("music");
+const card = document.getElementById("card");
+
+let scale = 1;
+
+/* Музыка запускается после первого касания */
+document.body.addEventListener("click", () => {
+    music.play().catch(()=>{});
+}, { once: true });
+
+/* Убегающая кнопка Нет */
+function moveNoButton() {
+    const rect = card.getBoundingClientRect();
+    const x = Math.random() * (rect.width - 80);
+    const y = Math.random() * (rect.height - 50);
+    noBtn.style.left = x + "px";
+    noBtn.style.top = y + "px";
+
+    scale += 0.15;
+    yesBtn.style.transform = scale(${scale});
+}
+
+noBtn.addEventListener("touchstart", moveNoButton);
+noBtn.addEventListener("mouseover", moveNoButton);
+
+/* Нажатие Да */
+yesBtn.addEventListener("click", () => {
+    message.textContent = "Я тоже тебя люблю ❤️";
+    message.style.opacity = 1;
+    yesBtn.style.display = "none";
+    noBtn.style.display = "none";
+    startConfetti();
+});
+
+/* Сердечки */
+function createHeart() {
+    const heart = document.createElement("div");
+    heart.className = "heart";
+    heart.innerHTML = "❤️";
+    heart.style.left = Math.random() * window.innerWidth + "px";
+    heart.style.fontSize = (14 + Math.random() * 18) + "px";
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 6000);
+}
+setInterval(createHeart, 350);
+
+/* Конфетти */
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let confetti = [];
+
+function startConfetti() {
+    for (let i = 0; i < 120; i++) {
+        confetti.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height - canvas.height,
+            r: Math.random() * 6 + 2
+        });
+    }
+    drawConfetti();
+}
+
+function drawConfetti() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    confetti.forEach(c => {
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+        ctx.fillStyle = hsl(${Math.random()*360},100%,60%);
+        ctx.fill();
+        c.y += 2;
+        if (c.y > canvas.height) c.y = -10;
+    });
+    requestAnimationFrame(drawConfetti);
+}
+</script>
+
+</body>
+</html>
